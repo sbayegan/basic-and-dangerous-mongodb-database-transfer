@@ -19,11 +19,16 @@ const destDbO = destDb.db(Setting.destDatabaseName);
 await srcDbO.listCollections().toArray((err, result) => {
     result.forEach(async (c) => {
         const collectionName = c.name;
-        await destDbO.createCollection(collectionName);
+        await destDbO.createCollection(collectionName + "1");
         const documents = await srcDbO.collection(collectionName).find().toArray();
-        await destDbO.collection(collectionName).insertMany(documents)
+        const documentsCount = await srcDbO.collection(collectionName).countDocuments();
+        console.log(`There are ${documentsCount} documents in the source collection "${collectionName}" and ${documents.length} of them have been transferred`);
+        if (documents.length != documentsCount) {
+            console.error("The document counts don't match. Skipping upload!");
+            return
+        }
+        await destDbO.collection(collectionName + "1").insertMany(documents)
 
-        console.log(documents, documents.length);
     })
 })
 
